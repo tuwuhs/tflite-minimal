@@ -1,5 +1,32 @@
 # TensorFlow Lite C++ minimal example
 
+First, download TensorFlow and build TensorFlow Lite:
+```sh
+git clone https://github.com/tensorflow/tensorflow.git
+cd tensorflow
+./tensorflow/lite/tools/make/download_dependencies.sh
+./tensorflow/lite/tools/make/build_lib.sh
+```
+
+This will build the static library `libtensorflow-lite.a` in `tensorflow/lite/tools/make/gen/linux_x86_64/lib`.
+
+Swap `build_lib.sh` with `build_rpi_lib.sh` or `build_aarch64_lib.sh` as appropriate. Check with the official TensorFlow Lite documentation for more details.
+
+Set the `TENSORFLOW_DIR` environment variable then run make:
+```sh
+cd minimal
+TENSORFLOW_DIR=~/tensorflow make
+```
+
+Usage:
+```sh
+./minimal [tflite_model]
+```
+
+## Original guide from the TensorFlow repo
+
+> Note: here the CMakeLists.txt is set up to download a copy of TensorFlow source and compile it as a dependency before compiling the minimal example, which may not be what you want.
+
 This example shows how you can build a simple TensorFlow Lite application.
 
 #### Step 1. Install CMake tool
