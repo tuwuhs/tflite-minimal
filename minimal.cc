@@ -19,6 +19,7 @@ limitations under the License.
 #include "tensorflow/lite/kernels/register.h"
 #include "tensorflow/lite/model.h"
 #include "tensorflow/lite/optional_debug_tools.h"
+#include "tensorflow/lite/delegates/xnnpack/xnnpack_delegate.h"
 
 // This is an example that is minimal to read a model
 // from disk and perform inference. There is no data being loaded
@@ -97,6 +98,13 @@ int main(int argc, char* argv[]) {
     edgetpu::EdgeTpuManager::GetSingleton()->OpenDevice();
   interpreter->SetExternalContext(kTfLiteEdgeTpuContext, edgetpu_context.get());
   interpreter->SetNumThreads(1);
+
+  TfLiteXNNPackDelegateOptions options = TfLiteXNNPackDelegateOptionsDefault();
+  // options.num_threads = <desired_num_threads>;
+  tflite::Interpreter::TfLiteDelegatePtr delegate(
+      TfLiteXNNPackDelegateCreate(&options),
+      [](TfLiteDelegate* delegate) { TfLiteXNNPackDelegateDelete(delegate); });
+  auto status = interpreter->ModifyGraphWithDelegate(std::move(delegate));
 
   // Allocate tensor buffers.
   TFLITE_MINIMAL_CHECK(interpreter->AllocateTensors() == kTfLiteOk);

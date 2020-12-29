@@ -30,16 +30,64 @@ TARGET = minimal
 
 CXXFLAGS = -Wall -Wextra -pedantic
 
+##################################
+## TensorFlow Lite Makefile build
+
+# INCLUDES = \
+# 	-I$(TENSORFLOW_DIR) \
+# 	-I$(TENSORFLOW_DIR)/tensorflow/lite/tools/make/downloads/flatbuffers/include \
+# 	-I$(LIBEDGETPU_DIR)/tflite/public
+
+# # Change to -ledgetpu if you have the library symlinked to libedgetpu.so
+# LIBS = \
+# 	-pthread \
+# 	-ltensorflow-lite \
+# 	-ldl \
+# 	-lrt \
+# 	-l:libedgetpu.so.1 \
+
+# LFLAGS = \
+# 	-L$(TENSORFLOW_DIR)/tensorflow/lite/tools/make/gen/$(TENSORFLOW_OUT_DIR)/lib
+
+################################
+## TensorFlow Lite CMake build
+
 INCLUDES = \
 	-I$(TENSORFLOW_DIR) \
-	-I$(TENSORFLOW_DIR)/tensorflow/lite/tools/make/downloads/flatbuffers/include \
+	-I$(TENSORFLOW_DIR)/tflite_build/flatbuffers/include \
 	-I$(LIBEDGETPU_DIR)/tflite/public
 
+# Assume that libtensorflow-lite.a is the repacked self-contained library
+#   (uncomment the additional libraries for vanilla CMake build)
 # Change to -ledgetpu if you have the library symlinked to libedgetpu.so
-LIBS = -pthread -ltensorflow-lite -ldl -l:libedgetpu.so.1
+LIBS = \
+	-pthread \
+	-ltensorflow-lite \
+	-ldl \
+	-lrt \
+	-l:libedgetpu.so.1 \
+	# -lXNNPACK \
+	# -lcpuinfo \
+	# -lclog \
+	# -lpthreadpool \
+	# -lfarmhash \
+	# -lfft2d_fftsg \
+	# -lfft2d_fftsg2d \
+	# -lflatbuffers \
+	# -lruy 
 
 LFLAGS = \
-	-L$(TENSORFLOW_DIR)/tensorflow/lite/tools/make/gen/$(TENSORFLOW_OUT_DIR)/lib 
+	-L$(TENSORFLOW_DIR)/tflite_build \
+	# -L$(TENSORFLOW_DIR)/tflite_build/clog \
+	# -L$(TENSORFLOW_DIR)/tflite_build/cpuinfo \
+	# -L$(TENSORFLOW_DIR)/tflite_build/pthreadpool \
+	# -L$(TENSORFLOW_DIR)/tflite_build/_deps/farmhash-build \
+	# -L$(TENSORFLOW_DIR)/tflite_build/_deps/fft2d-build \
+	# -L$(TENSORFLOW_DIR)/tflite_build/_deps/flatbuffers-build \
+	# -L$(TENSORFLOW_DIR)/tflite_build/_deps/ruy-build \
+	# -L$(TENSORFLOW_DIR)/tflite_build/_deps/xnnpack-build 
+
+
 
 all: $(TARGET)
 
