@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 #include <cstdio>
+#include "edgetpu.h"
 #include "edgetpu_c.h"
 #include "tensorflow/lite/interpreter.h"
 #include "tensorflow/lite/kernels/register.h"
@@ -36,7 +37,9 @@ limitations under the License.
   }
 
 int main(int argc, char* argv[]) {
+  // Query Edge TPUs
   // From tflite/cpp/examples/lstpu/lstpu.cc
+  // C style
   size_t num_devices;
   std::unique_ptr<edgetpu_device, decltype(&edgetpu_free_devices)> devices(
     edgetpu_list_devices(&num_devices), &edgetpu_free_devices);
@@ -51,6 +54,19 @@ int main(int argc, char* argv[]) {
       }
     }(device.type), device.path);
   }
+  
+  // C++ style
+  auto records = edgetpu::EdgeTpuManager::GetSingleton()->EnumerateEdgeTpu();
+  for (auto record: records) {
+    printf("%s %s\n", [](auto& t){
+      switch (t) {
+        case edgetpu::DeviceType::kApexPci: return "PCI";
+        case edgetpu::DeviceType::kApexUsb: return "USB";
+        default: return "Unknown";
+      }
+    }(record.type), record.path.c_str());
+  }
+
 
   if (argc != 2) {
     fprintf(stderr, "minimal <tflite model>\n");
@@ -63,15 +79,24 @@ int main(int argc, char* argv[]) {
       tflite::FlatBufferModel::BuildFromFile(filename);
   TFLITE_MINIMAL_CHECK(model != nullptr);
 
+  // Register Edge TPU
+  tflite::ops::builtin::BuiltinOpResolver resolver;
+  resolver.AddCustom(edgetpu::kCustomOp, edgetpu::RegisterCustomOp());
+
   // Build the interpreter with the InterpreterBuilder.
   // Note: all Interpreters should be built with the InterpreterBuilder,
   // which allocates memory for the Intrepter and does various set up
   // tasks so that the Interpreter can read the provided model.
-  tflite::ops::builtin::BuiltinOpResolver resolver;
   tflite::InterpreterBuilder builder(*model, resolver);
   std::unique_ptr<tflite::Interpreter> interpreter;
   builder(&interpreter);
   TFLITE_MINIMAL_CHECK(interpreter != nullptr);
+
+  // Create a context for Edge TPU, then bind with the interpreter
+  std::shared_ptr<edgetpu::EdgeTpuContext> edgetpu_context =
+    edgetpu::EdgeTpuManager::GetSingleton()->OpenDevice();
+  interpreter->SetExternalContext(kTfLiteEdgeTpuContext, edgetpu_context.get());
+  interpreter->SetNumThreads(1);
 
   // Allocate tensor buffers.
   TFLITE_MINIMAL_CHECK(interpreter->AllocateTensors() == kTfLiteOk);
@@ -92,6 +117,9 @@ int main(int argc, char* argv[]) {
   // TODO(user): Insert getting data out code.
   // Note: The buffer of the output tensor with index `i` of type T can
   // be accessed with `T* output = interpreter->typed_output_tensor<T>(i);`
+
+  interpreter.reset();
+  edgetpu_context.reset();
 
   return 0;
 }
