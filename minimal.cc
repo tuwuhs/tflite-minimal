@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 #include <cstdio>
+#include "edgetpu_c.h"
 #include "tensorflow/lite/interpreter.h"
 #include "tensorflow/lite/kernels/register.h"
 #include "tensorflow/lite/model.h"
@@ -35,6 +36,22 @@ limitations under the License.
   }
 
 int main(int argc, char* argv[]) {
+  // From tflite/cpp/examples/lstpu/lstpu.cc
+  size_t num_devices;
+  std::unique_ptr<edgetpu_device, decltype(&edgetpu_free_devices)> devices(
+    edgetpu_list_devices(&num_devices), &edgetpu_free_devices);
+  
+  for (size_t i = 0; i < num_devices; ++i) {
+    const auto& device = devices.get()[i];
+    printf("%ld %s %s\n", i, [](auto& t){
+      switch (t) {
+        case EDGETPU_APEX_PCI: return "PCI";
+        case EDGETPU_APEX_USB: return "USB";
+        default: return "Unknown";
+      }
+    }(device.type), device.path);
+  }
+
   if (argc != 2) {
     fprintf(stderr, "minimal <tflite model>\n");
     return 1;
