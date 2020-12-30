@@ -1,7 +1,9 @@
 
 # Set these as needed, or set the env variable when running make
-# TENSORFLOW_DIR = ../tensorflow
+TENSORFLOW_DIR = ../tensorflow_src
 LIBEDGETPU_DIR = ../coral/libedgetpu
+
+TENSORFLOW_OUT_DIR = rpi_armv6
 
 # Adapted from tensorflow/lite/tools/make/Makefile
 # Try to figure out the host system
@@ -36,7 +38,7 @@ INCLUDES = \
 	-I$(LIBEDGETPU_DIR)/tflite/public
 
 # Change to -ledgetpu if you have the library symlinked to libedgetpu.so
-LIBS = -pthread -ltensorflow-lite -ldl -l:libedgetpu.so.1
+LIBS = -pthread -ltensorflow-lite -ldl -latomic -l:libedgetpu.so.1
 
 LFLAGS = \
 	-L$(TENSORFLOW_DIR)/tensorflow/lite/tools/make/gen/$(TENSORFLOW_OUT_DIR)/lib 
