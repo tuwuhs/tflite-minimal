@@ -99,14 +99,9 @@ int main(int argc, char* argv[]) {
   interpreter->SetExternalContext(kTfLiteEdgeTpuContext, edgetpu_context.get());
   interpreter->SetNumThreads(1);
 
-  TfLiteXNNPackDelegateOptions options = TfLiteXNNPackDelegateOptionsDefault();
-  // options.num_threads = <desired_num_threads>;
-  tflite::Interpreter::TfLiteDelegatePtr delegate(
-      TfLiteXNNPackDelegateCreate(&options),
-      [](TfLiteDelegate* delegate) { TfLiteXNNPackDelegateDelete(delegate); });
-  auto status = interpreter->ModifyGraphWithDelegate(std::move(delegate));
-
   // Allocate tensor buffers.
+  // This will fail when an Edge TPU model is used but no Edge TPU devices
+  // connected.
   TFLITE_MINIMAL_CHECK(interpreter->AllocateTensors() == kTfLiteOk);
   printf("=== Pre-invoke Interpreter State ===\n");
   tflite::PrintInterpreterState(interpreter.get());

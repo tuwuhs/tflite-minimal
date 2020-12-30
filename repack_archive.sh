@@ -4,6 +4,7 @@
 # Tested to work on tensorflow@41802b3785a3e89f421254de6b6326de516cdb8d
 
 if [ -f "libtensorflow-lite.a.old" ]; then
+    echo "Delete .old file first!"
     exit
 fi
 
