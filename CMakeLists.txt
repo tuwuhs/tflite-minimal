@@ -39,6 +39,8 @@ if(NOT LIBEDGETPU_DIR)
   )
 endif()
 
+find_package( OpenCV REQUIRED )
+
 add_subdirectory(
   "${TENSORFLOW_SOURCE_DIR}/tensorflow/lite"
   "${CMAKE_CURRENT_BINARY_DIR}/tensorflow-lite"
@@ -52,7 +54,9 @@ target_link_libraries(minimal
   tensorflow-lite
   :libedgetpu.so.1.0
   ${CMAKE_DL_LIBS}
+  ${OpenCV_LIBS}
 )
-target_include_directories(minimal PRIVATE
+include_directories( 
   "${LIBEDGETPU_DIR}/tflite/public"
+  ${OpenCV_INCLUDE_DIRS} 
 )
