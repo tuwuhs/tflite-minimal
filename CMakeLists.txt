@@ -19,12 +19,22 @@
 cmake_minimum_required(VERSION 3.16)
 project(minimal C CXX)
 
-set(TENSORFLOW_SOURCE_DIR "" CACHE PATH
-  "Directory that contains the TensorFlow project"
-)
+# set(TENSORFLOW_SOURCE_DIR "" CACHE PATH
+#   "Directory that contains the TensorFlow project"
+# )
 if(NOT TENSORFLOW_SOURCE_DIR)
   get_filename_component(TENSORFLOW_SOURCE_DIR
-    "${CMAKE_CURRENT_LIST_DIR}/../../../../"
+    "${CMAKE_CURRENT_LIST_DIR}/../tensorflow"
+    ABSOLUTE
+  )
+endif()
+
+# set(LIBEDGETPU_DIR "" CACHE PATH
+#   "Directory that contains the libedgetpu project"
+# )
+if(NOT LIBEDGETPU_DIR)
+  get_filename_component(LIBEDGETPU_DIR
+    "${CMAKE_CURRENT_LIST_DIR}/../coral/libedgetpu"
     ABSOLUTE
   )
 endif()
@@ -40,5 +50,9 @@ add_executable(minimal
 )
 target_link_libraries(minimal
   tensorflow-lite
+  :libedgetpu.so.1.0
   ${CMAKE_DL_LIBS}
+)
+target_include_directories(minimal PRIVATE
+  "${LIBEDGETPU_DIR}/tflite/public"
 )
