@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 #include <cstdio>
+#include <chrono>
 
 #include <opencv2/opencv.hpp>
 
@@ -154,14 +155,21 @@ int main(int argc, char* argv[]) {
   const char* filename = argv[1];
   const char* image_filename = argv[2];
 
+  auto start_time = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double> elapsed_time;
+
   // Load model
   std::unique_ptr<tflite::FlatBufferModel> model =
       tflite::FlatBufferModel::BuildFromFile(filename);
   TFLITE_MINIMAL_CHECK(model != nullptr);
+  elapsed_time = std::chrono::high_resolution_clock::now() - start_time;
+  printf("[%8.2f ms] Done loading model\n", elapsed_time.count() * 1000);
 
   // Register Edge TPU
   tflite::ops::builtin::BuiltinOpResolver resolver;
   resolver.AddCustom(edgetpu::kCustomOp, edgetpu::RegisterCustomOp());
+  elapsed_time = std::chrono::high_resolution_clock::now() - start_time;
+  printf("[%8.2f ms] Done registering Edge TPU\n", elapsed_time.count() * 1000);
 
   // Build the interpreter with the InterpreterBuilder.
   // Note: all Interpreters should be built with the InterpreterBuilder,
@@ -171,17 +179,24 @@ int main(int argc, char* argv[]) {
   std::unique_ptr<tflite::Interpreter> interpreter;
   builder(&interpreter);
   TFLITE_MINIMAL_CHECK(interpreter != nullptr);
+  elapsed_time = std::chrono::high_resolution_clock::now() - start_time;
+  printf("[%8.2f ms] Done building interpreter\n", elapsed_time.count() * 1000);
 
   // Create a context for Edge TPU, then bind with the interpreter
   std::shared_ptr<edgetpu::EdgeTpuContext> edgetpu_context =
     edgetpu::EdgeTpuManager::GetSingleton()->OpenDevice();
   interpreter->SetExternalContext(kTfLiteEdgeTpuContext, edgetpu_context.get());
   interpreter->SetNumThreads(1);
+  elapsed_time = std::chrono::high_resolution_clock::now() - start_time;
+  printf("[%8.2f ms] Done creating context for Edge TPU\n", elapsed_time.count() * 1000);
 
   // Allocate tensor buffers.
   // This will fail when an Edge TPU model is used but no Edge TPU devices
   // connected.
   TFLITE_MINIMAL_CHECK(interpreter->AllocateTensors() == kTfLiteOk);
+  elapsed_time = std::chrono::high_resolution_clock::now() - start_time;
+  printf("[%8.2f ms] Done allocating tensor ts\n", elapsed_time.count() * 1000);
+
   // printf("=== Pre-invoke Interpreter State ===\n");
   // tflite::PrintInterpreterState(interpreter.get());
 
@@ -213,6 +228,9 @@ int main(int argc, char* argv[]) {
   int wanted_channels = input_dims->data[3];
   printf("Input dims: %d %d %d\n", wanted_height, wanted_width, wanted_channels);
 
+  elapsed_time = std::chrono::high_resolution_clock::now() - start_time;
+  printf("[%8.2f ms] Start imread\n", elapsed_time.count() * 1000);
+
   cv::Mat image = cv::imread(argv[2], cv::IMREAD_COLOR);
   // printf("Image dims: %d %d %d\n", image.rows, image.cols, image.channels());
   cv::Mat image_rgb;
@@ -221,6 +239,9 @@ int main(int argc, char* argv[]) {
   int image_width = image_rgb.cols;
   int image_channels = image_rgb.channels();
   printf("Image dims: %d %d %d\n", image_height, image_width, image_channels);
+
+  elapsed_time = std::chrono::high_resolution_clock::now() - start_time;
+  printf("[%8.2f ms] Start resize\n", elapsed_time.count() * 1000);
 
   switch (input_type) {
     case kTfLiteFloat32:
@@ -244,8 +265,18 @@ int main(int argc, char* argv[]) {
     //   exit(-1);
   }
 
+  elapsed_time = std::chrono::high_resolution_clock::now() - start_time;
+  printf("[%8.2f ms] Done resize\n", elapsed_time.count() * 1000);
+
   // Run inference
-  TFLITE_MINIMAL_CHECK(interpreter->Invoke() == kTfLiteOk);
+  for (size_t i = 0; i < 5; ++i) {
+    auto start_time = std::chrono::high_resolution_clock::now();
+    TFLITE_MINIMAL_CHECK(interpreter->Invoke() == kTfLiteOk);
+    auto end_time = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed_time = end_time - start_time;
+    printf("Prediction took: %f ms\n", elapsed_time.count() * 1000);
+  }
+
   // printf("\n\n=== Post-invoke Interpreter State ===\n");
   // tflite::PrintInterpreterState(interpreter.get());
 
@@ -253,6 +284,9 @@ int main(int argc, char* argv[]) {
   // TODO(user): Insert getting data out code.
   // Note: The buffer of the output tensor with index `i` of type T can
   // be accessed with `T* output = interpreter->typed_output_tensor<T>(i);`
+  elapsed_time = std::chrono::high_resolution_clock::now() - start_time;
+  printf("[%8.2f ms] Start reading output\n", elapsed_time.count() * 1000);
+
   int output = outputs[0];
   TfLiteType output_type = interpreter->tensor(output)->type;
   TfLiteIntArray* output_dims = interpreter->tensor(output)->dims;
@@ -286,6 +320,9 @@ int main(int argc, char* argv[]) {
     //   exit(-1);
   }
   printf("\n");
+
+  elapsed_time = std::chrono::high_resolution_clock::now() - start_time;
+  printf("[%8.2f ms] Done reading output\n", elapsed_time.count() * 1000);
 
   interpreter.reset();
   edgetpu_context.reset();
