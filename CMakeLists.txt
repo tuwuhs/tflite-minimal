@@ -73,3 +73,14 @@ target_link_libraries(label_images
   ${CMAKE_DL_LIBS}
   ${OpenCV_LIBS}
 )
+
+add_executable(label_images_multi
+  label_images_multi.cc
+)
+target_link_libraries(label_images_multi
+  tensorflow-lite
+  :libedgetpu.so.1.0
+  atomic
+  ${CMAKE_DL_LIBS}
+  ${OpenCV_LIBS}
+)
