@@ -53,6 +53,7 @@ add_executable(minimal
 target_link_libraries(minimal
   tensorflow-lite
   :libedgetpu.so.1.0
+  atomic
   ${CMAKE_DL_LIBS}
   ${OpenCV_LIBS}
 )

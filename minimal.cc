@@ -135,16 +135,16 @@ int main(int argc, char* argv[]) {
   }
   
   // C++ style
-  auto records = edgetpu::EdgeTpuManager::GetSingleton()->EnumerateEdgeTpu();
-  for (auto record: records) {
-    printf("%s %s\n", [](auto& t){
-      switch (t) {
-        case edgetpu::DeviceType::kApexPci: return "PCI";
-        case edgetpu::DeviceType::kApexUsb: return "USB";
-        default: return "Unknown";
-      }
-    }(record.type), record.path.c_str());
-  }
+  // auto records = edgetpu::EdgeTpuManager::GetSingleton()->EnumerateEdgeTpu();
+  // for (auto record: records) {
+  //   printf("%s %s\n", [](auto& t){
+  //     switch (t) {
+  //       case edgetpu::DeviceType::kApexPci: return "PCI";
+  //       case edgetpu::DeviceType::kApexUsb: return "USB";
+  //       default: return "Unknown";
+  //     }
+  //   }(record.type), record.path.c_str());
+  // }
 
 
   if (argc != 3) {
