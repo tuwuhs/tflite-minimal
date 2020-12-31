@@ -47,6 +47,11 @@ add_subdirectory(
   EXCLUDE_FROM_ALL
 )
 
+include_directories( 
+  "${LIBEDGETPU_DIR}/tflite/public"
+  ${OpenCV_INCLUDE_DIRS} 
+)
+
 add_executable(minimal
   minimal.cc
 )
@@ -57,7 +62,14 @@ target_link_libraries(minimal
   ${CMAKE_DL_LIBS}
   ${OpenCV_LIBS}
 )
-include_directories( 
-  "${LIBEDGETPU_DIR}/tflite/public"
-  ${OpenCV_INCLUDE_DIRS} 
+
+add_executable(label_images
+  label_images.cc
+)
+target_link_libraries(label_images
+  tensorflow-lite
+  :libedgetpu.so.1.0
+  atomic
+  ${CMAKE_DL_LIBS}
+  ${OpenCV_LIBS}
 )
