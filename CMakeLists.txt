@@ -65,6 +65,7 @@ target_link_libraries(minimal
 
 add_executable(label_images
   label_images.cc
+  TFLiteRunner.cpp
 )
 target_link_libraries(label_images
   tensorflow-lite
