@@ -46,7 +46,7 @@ void TFLiteRunner::Close()
   _interpreter.reset();
 }
 
-std::vector<float> TFLiteRunner::PredictImage(cv::Mat imageBgr)
+std::vector<float> TFLiteRunner::PredictImage(cv::Mat& imageBgr)
 {
   TfLiteIntArray* inputDims = _interpreter->tensor(_inputIdx)->dims;
   int wantedHeight = inputDims->data[1];
@@ -92,9 +92,9 @@ std::vector<float> TFLiteRunner::PredictImage(cv::Mat imageBgr)
   return result;
 }
 
-size_t TFLiteRunner::PredictImageMax(cv::Mat image)
+size_t TFLiteRunner::PredictImageMax(cv::Mat& imageBgr)
 {
-  auto output = PredictImage(image);
+  auto output = PredictImage(imageBgr);
 
   size_t maxIdx = -1;
   float maxVal = std::numeric_limits<float>::min();

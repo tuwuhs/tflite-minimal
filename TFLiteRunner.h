@@ -27,8 +27,8 @@ public:
   virtual ~TFLiteRunner();
 
   void Close();
-  std::vector<float> PredictImage(cv::Mat imageBgr);
-  size_t PredictImageMax(cv::Mat image);
+  std::vector<float> PredictImage(cv::Mat& imageBgr);
+  size_t PredictImageMax(cv::Mat& imageBgr);
   double GetLastPredictionTimeSeconds();
 
 private:
