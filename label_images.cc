@@ -249,36 +249,11 @@ int main(int argc, char* argv[])
     }(device.type), device.path);
   }
 
-  auto runner = TFLiteRunner(model_filename);
+  // Create a context for Edge TPU, then bind with the interpreter
+  std::shared_ptr<edgetpu::EdgeTpuContext> edgetpu_context = 
+    edgetpu::EdgeTpuManager::GetSingleton()->OpenDevice();
 
-  // // Load model
-  // std::unique_ptr<tflite::FlatBufferModel> model =
-  //     tflite::FlatBufferModel::BuildFromFile(model_filename);
-  // TFLITE_MINIMAL_CHECK(model != nullptr);
-
-  // // Register Edge TPU
-  // tflite::ops::builtin::BuiltinOpResolver resolver;
-  // resolver.AddCustom(edgetpu::kCustomOp, edgetpu::RegisterCustomOp());
-
-  // // Build the interpreter with the InterpreterBuilder.
-  // // Note: all Interpreters should be built with the InterpreterBuilder,
-  // // which allocates memory for the Intrepter and does various set up
-  // // tasks so that the Interpreter can read the provided model.
-  // tflite::InterpreterBuilder builder(*model, resolver);
-  // std::unique_ptr<tflite::Interpreter> interpreter;
-  // builder(&interpreter);
-  // TFLITE_MINIMAL_CHECK(interpreter != nullptr);
-
-  // // Create a context for Edge TPU, then bind with the interpreter
-  // std::shared_ptr<edgetpu::EdgeTpuContext> edgetpu_context = 
-  //   edgetpu::EdgeTpuManager::GetSingleton()->OpenDevice();
-  // interpreter->SetExternalContext(kTfLiteEdgeTpuContext, edgetpu_context.get());
-  // interpreter->SetNumThreads(1);
-
-  // // Allocate tensor buffers.
-  // // This will fail when an Edge TPU model is used but no Edge TPU devices
-  // // connected.
-  // TFLITE_MINIMAL_CHECK(interpreter->AllocateTensors() == kTfLiteOk);
+  auto runner = TFLiteRunner(model_filename, edgetpu_context);
 
   size_t total = 0;
   size_t failed = 0;
@@ -308,8 +283,8 @@ int main(int argc, char* argv[])
   printf("Total Images: %ld     Failed Predictions: %ld      %.2f%% Successfully Predicted\n",
     total, failed, (1.0 - 1.0*failed/total)*100.0);
 
-  // interpreter.reset();
-  // edgetpu_context.reset();
+  runner.Close();
+  edgetpu_context.reset();
 
   return 0;
 }

@@ -2,15 +2,24 @@
 #include "TFLiteRunner.h"
 #include "utils.h"
 
-TFLiteRunner::TFLiteRunner(std::string modelFilename)
+TFLiteRunner::TFLiteRunner(std::string modelFilename, std::shared_ptr<edgetpu::EdgeTpuContext> edgeTpuContext)
 {
   _model = tflite::FlatBufferModel::BuildFromFile(modelFilename.c_str());
   TFLITE_MINIMAL_CHECK(_model != nullptr);
 
   tflite::ops::builtin::BuiltinOpResolver resolver;
+  if (edgeTpuContext != nullptr) {
+    resolver.AddCustom(edgetpu::kCustomOp, edgetpu::RegisterCustomOp());
+  }
+
   tflite::InterpreterBuilder builder(*_model, resolver);
   builder(&_interpreter);
   TFLITE_MINIMAL_CHECK(_interpreter != nullptr);
+
+  if (edgeTpuContext != nullptr) {
+    _interpreter->SetExternalContext(kTfLiteEdgeTpuContext, edgeTpuContext.get());
+    _interpreter->SetNumThreads(1);
+  }
 
   auto ret = _interpreter->AllocateTensors();
   TFLITE_MINIMAL_CHECK(ret == kTfLiteOk);
@@ -18,6 +27,11 @@ TFLiteRunner::TFLiteRunner(std::string modelFilename)
 
 TFLiteRunner::~TFLiteRunner()
 {
+}
+
+void TFLiteRunner::Close()
+{
+  _interpreter.reset();
 }
 
 std::vector<float> TFLiteRunner::PredictImage(cv::Mat image)

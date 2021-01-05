@@ -24,12 +24,13 @@
 class TFLiteRunner
 {
 public:
-  TFLiteRunner(std::string modelFilename);
+  TFLiteRunner(std::string modelFilename, std::shared_ptr<edgetpu::EdgeTpuContext> edgetpu_context = nullptr);
   TFLiteRunner(const TFLiteRunner&) = delete;
   TFLiteRunner& operator=(const TFLiteRunner&) = delete;
   TFLiteRunner(TFLiteRunner&&) = default;
   virtual ~TFLiteRunner();
 
+  void Close();
   std::vector<float> PredictImage(cv::Mat image);
   size_t PredictImageMax(cv::Mat image);
 
