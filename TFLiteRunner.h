@@ -1,15 +1,13 @@
 
 #pragma once
 
+#include <chrono>
 #include <cstdio>
 #include <fstream>
 #include <sstream>
 #include <vector>
 
 #include <dirent.h>
-
-#include <cstdio>
-#include <chrono>
 
 #include <opencv2/opencv.hpp>
 
@@ -27,7 +25,7 @@ public:
   virtual ~TFLiteRunner();
 
   void Close();
-  std::vector<float> PredictImage(cv::Mat& imageBgr);
+  std::vector<float> PredictImage(cv::Mat& imageBgr, bool applySoftmax = false);
   size_t PredictImageMax(cv::Mat& imageBgr);
   double GetLastPredictionTimeSeconds();
 

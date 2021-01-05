@@ -1,7 +1,8 @@
 
 #pragma once
 
-#include <stdint.h>
+#include <cmath>
+#include <cstdint>
 
 #include "tensorflow/lite/builtin_op_data.h"
 #include "tensorflow/lite/interpreter.h"
@@ -88,4 +89,23 @@ void resize(T* out, uint8_t* in, int image_height, int image_width,
         break;
     }
   }
+}
+
+template<class T>
+std::vector<T> softmax(std::vector<T>& input)
+{
+  std::vector<T> output;
+
+  T sumExp = 0;
+  for (auto i: input) {
+    T ei = exp(i); 
+    output.push_back(ei);
+    sumExp += ei;
+  }
+
+  for (auto& x: output) {
+    x /= sumExp;
+  }
+
+  return output;
 }

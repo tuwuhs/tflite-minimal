@@ -46,7 +46,7 @@ void TFLiteRunner::Close()
   _interpreter.reset();
 }
 
-std::vector<float> TFLiteRunner::PredictImage(cv::Mat& imageBgr)
+std::vector<float> TFLiteRunner::PredictImage(cv::Mat& imageBgr, bool applySoftmax)
 {
   TfLiteIntArray* inputDims = _interpreter->tensor(_inputIdx)->dims;
   int wantedHeight = inputDims->data[1];
@@ -89,7 +89,11 @@ std::vector<float> TFLiteRunner::PredictImage(cv::Mat& imageBgr)
     result.push_back(_interpreter->typed_tensor<float>(_outputIdx)[i]);
   }
 
-  return result;
+  if (applySoftmax) {
+    return softmax(result);
+  } else {
+    return result;
+  }
 }
 
 size_t TFLiteRunner::PredictImageMax(cv::Mat& imageBgr)
