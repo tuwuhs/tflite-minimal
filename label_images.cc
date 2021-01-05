@@ -110,7 +110,8 @@ int main(int argc, char* argv[])
       total += 1;
       cv::Mat image = cv::imread(image_full_path.c_str(), cv::IMREAD_COLOR);
       auto result = runner.PredictImageMax(image);
-      
+      printf("Prediction took: %f ms\n", runner.GetLastPredictionTimeSeconds() * 1000);
+
       if (result != i) {
         failed += 1;
         printf("Prediction: %s   actual label: %s", labels[result].c_str(), actual_label.c_str());

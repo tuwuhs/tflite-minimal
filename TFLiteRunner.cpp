@@ -78,8 +78,7 @@ std::vector<float> TFLiteRunner::PredictImage(cv::Mat imageBgr)
   auto startTime = std::chrono::high_resolution_clock::now();
   TFLITE_MINIMAL_CHECK(_interpreter->Invoke() == kTfLiteOk);
   auto endTime = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<double> elapsedTime = endTime - startTime;
-  printf("Prediction took: %f ms\n", elapsedTime.count() * 1000);
+  _lastPredictionTime = endTime - startTime;
 
   // Read output buffers
   TfLiteIntArray* outputDims = _interpreter->tensor(_outputIdx)->dims;
@@ -108,4 +107,9 @@ size_t TFLiteRunner::PredictImageMax(cv::Mat image)
   }
 
   return maxIdx;
+}
+
+double TFLiteRunner::GetLastPredictionTimeSeconds()
+{
+  return _lastPredictionTime.count();
 }

@@ -29,6 +29,7 @@ public:
   void Close();
   std::vector<float> PredictImage(cv::Mat imageBgr);
   size_t PredictImageMax(cv::Mat image);
+  double GetLastPredictionTimeSeconds();
 
 private:
   std::unique_ptr<tflite::FlatBufferModel> _model;
@@ -36,4 +37,6 @@ private:
 
   int _inputIdx;
   int _outputIdx;
+  
+  std::chrono::duration<double> _lastPredictionTime;
 };
