@@ -31,10 +31,13 @@ public:
   virtual ~TFLiteRunner();
 
   void Close();
-  std::vector<float> PredictImage(cv::Mat image);
+  std::vector<float> PredictImage(cv::Mat imageBgr);
   size_t PredictImageMax(cv::Mat image);
 
 private:
   std::unique_ptr<tflite::FlatBufferModel> _model;
   std::unique_ptr<tflite::Interpreter> _interpreter;
+
+  int _inputIdx;
+  int _outputIdx;
 };
