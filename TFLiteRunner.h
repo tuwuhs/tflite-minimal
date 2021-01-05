@@ -14,12 +14,8 @@
 #include <opencv2/opencv.hpp>
 
 #include "edgetpu.h"
-#include "edgetpu_c.h"
-#include "tensorflow/lite/builtin_op_data.h"
 #include "tensorflow/lite/interpreter.h"
-#include "tensorflow/lite/kernels/register.h"
 #include "tensorflow/lite/model.h"
-#include "tensorflow/lite/optional_debug_tools.h"
 
 class TFLiteRunner
 {
