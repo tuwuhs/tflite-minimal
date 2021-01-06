@@ -109,13 +109,6 @@ int main(int argc, char* argv[])
     for (auto image_full_path: images_full_path) {
       total += 1;
       cv::Mat image = cv::imread(image_full_path.c_str(), cv::IMREAD_COLOR);
-      auto resultSoftmax = runner.PredictImage(image, true);
-
-      for (auto x: resultSoftmax) {
-        printf("%f ", x);
-      }
-      printf("\n");
-
       auto result = runner.PredictImageMax(image);
       printf("Prediction took: %f ms\n", runner.GetLastPredictionTimeSeconds() * 1000);
 
